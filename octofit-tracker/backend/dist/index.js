@@ -4,8 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const mongoose_1 = __importDefault(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
+// Import database connection
+const database_1 = require("./database");
 // Import route handlers
 const users_1 = __importDefault(require("./routes/users"));
 const teams_1 = __importDefault(require("./routes/teams"));
@@ -15,7 +16,6 @@ const workouts_1 = __importDefault(require("./routes/workouts"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/octofit';
 // Generate API URL with Codespaces support
 const getApiUrl = () => {
     if (process.env.CODESPACE_NAME) {
@@ -26,13 +26,10 @@ const getApiUrl = () => {
 // Middleware
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-// MongoDB connection
-mongoose_1.default.connect(MONGODB_URI)
-    .then(() => {
-    console.log('Connected to MongoDB');
-})
-    .catch((err) => {
-    console.error('MongoDB connection error:', err);
+// Connect to MongoDB
+(0, database_1.connectDatabase)().catch((error) => {
+    console.error('Failed to connect to database:', error);
+    process.exit(1);
 });
 // Routes
 app.get('/api/health', (req, res) => {

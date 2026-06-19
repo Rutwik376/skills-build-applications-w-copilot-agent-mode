@@ -1,6 +1,8 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+
+// Import database connection
+import { connectDatabase } from './database';
 
 // Import route handlers
 import usersRouter from './routes/users';
@@ -13,7 +15,6 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/octofit';
 
 // Generate API URL with Codespaces support
 const getApiUrl = (): string => {
@@ -27,14 +28,11 @@ const getApiUrl = (): string => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB connection
-mongoose.connect(MONGODB_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err);
-  });
+// Connect to MongoDB
+connectDatabase().catch((error) => {
+  console.error('Failed to connect to database:', error);
+  process.exit(1);
+});
 
 // Routes
 app.get('/api/health', (req, res) => {
